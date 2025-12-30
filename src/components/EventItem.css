@@ -1,0 +1,107 @@
+/* Event List */
+.event-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.empty-state {
+  color: #666;
+  font-style: italic;
+  text-align: center;
+  padding: 1rem;
+}
+
+.event-item {
+  border: 1px solid #333;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  background-color: #1a1a1a;
+}
+
+.event-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.event-header:hover {
+  background-color: #252525;
+}
+
+.event-number {
+  font-size: 0.8rem;
+  color: #666;
+  min-width: 30px;
+}
+
+.actor-badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.actor-human {
+  background-color: #1e40af;
+  color: #93c5fd;
+  border: 1px solid #3b82f6;
+}
+
+.actor-ai {
+  background-color: #065f46;
+  color: #6ee7b7;
+  border: 1px solid #10b981;
+}
+
+.event-summary {
+  flex: 1;
+  font-size: 0.85rem;
+  color: #ccc;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-timestamp {
+  font-size: 0.75rem;
+  color: #666;
+  font-family: monospace;
+}
+
+.expand-icon {
+  font-size: 0.7rem;
+  color: #666;
+}
+
+.event-details {
+  padding: 0 0.75rem 0.75rem 0.75rem;
+  border-top: 1px solid #333;
+  background-color: #0d0d0d;
+}
+
+.detail-row {
+  display: flex;
+  padding: 0.4rem 0;
+  font-size: 0.8rem;
+}
+
+.detail-label {
+  min-width: 120px;
+  color: #888;
+  font-weight: 500;
+}
+
+.detail-value {
+  color: #fff;
+}
+
+.detail-value.monospace {
+  font-family: 'Courier New', monospace;
+  background-color: #1a1a1a;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+}
