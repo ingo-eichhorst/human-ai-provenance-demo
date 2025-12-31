@@ -1,7 +1,7 @@
 {
   "name": "a2ui-provenance-demo",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run dev:frontend\" \"npm run server\"",
@@ -11,7 +11,8 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "test:backend": "node server/test.mjs"
   },
   "dependencies": {
     "pdf-lib": "^1.17.1",
