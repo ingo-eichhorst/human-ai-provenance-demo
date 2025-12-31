@@ -101,6 +101,9 @@ A simple, educational demonstration of content provenance concepts in an AI-assi
 - Click "Verify Bundle" again
 - Verification fails (red) with specific error messages showing which checks failed
 
+For PNG Export use for verification:
+- https://c2paviewer.com/
+
 ## Architecture Overview
 
 ### Components

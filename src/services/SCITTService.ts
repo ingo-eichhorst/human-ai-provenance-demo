@@ -101,7 +101,9 @@ export class SCITTService {
   async verifyReceipt(manifest: C2PAExternalManifest, receipt: SCITTReceipt): Promise<boolean> {
     if (receipt.serviceUrl.startsWith('demo://')) {
       // Demo receipt verification: just check hash
-      const manifestJson = JSON.stringify(manifest);
+      // Exclude scitt field from hash computation (it wasn't there when receipt was created)
+      const { scitt, ...manifestWithoutScitt } = manifest;
+      const manifestJson = JSON.stringify(manifestWithoutScitt);
       const manifestHash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(manifestJson));
 
       const hashHex = Array.from(new Uint8Array(manifestHash))

@@ -94,3 +94,23 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.export-btn-primary {
+  background-color: #646cff;
+  font-weight: 700;
+}
+
+.export-btn-primary:hover:not(:disabled) {
+  background-color: #535bf2;
+}
+
+.export-controls {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.export-controls .export-btn {
+  flex: 1;
+  min-width: 150px;
+}

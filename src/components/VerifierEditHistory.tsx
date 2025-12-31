@@ -5,32 +5,70 @@ import './VerifierEditHistory.css';
 
 interface VerifierEditHistoryProps {
   verificationResult: C2PAVerificationResult | null;
+  verifiedContent: string | null;
 }
 
 function ActionItem({
   action,
   index,
   isExpanded,
-  onToggle
+  onToggle,
+  verifiedContent
 }: {
   action: C2PAAction;
   index: number;
   isExpanded: boolean;
   onToggle: () => void;
+  verifiedContent: string | null;
 }) {
   const isHuman = action.digitalSourceType?.includes('humanEdits');
   const isAI = action.digitalSourceType?.includes('trainedAlgorithmicMedia');
 
+  // Format action type for display
+  const getActionLabel = (actionType: string) => {
+    switch (actionType) {
+      case 'c2pa.created': return 'Created';
+      case 'c2pa.edited': return 'Edited';
+      case 'c2pa.opened': return 'Opened';
+      default: return actionType;
+    }
+  };
+
+  // Extract changed text from content using changeRange
+  const getChangedText = () => {
+    if (!verifiedContent || !action.parameters?.changeRange) return null;
+    const { start, end } = action.parameters.changeRange;
+    return verifiedContent.slice(start, end);
+  };
+
+  const changedText = getChangedText();
+  const actionLabel = getActionLabel(action.action);
+
   return (
-    <div className="event-item" onClick={onToggle}>
+    <div className={`event-item ${isHuman ? 'human-action' : 'ai-action'}`} onClick={onToggle}>
       <div className="event-header">
-        <span className="event-number">#{index + 1}</span>
-        <span className={`actor-badge ${isHuman ? 'human' : 'ai'}`}>
-          {isHuman ? 'Human' : isAI ? 'AI' : 'Unknown'}
-        </span>
-        <span className="event-action">{action.action}</span>
+        <div className="event-header-left">
+          <span className="event-number">#{index + 1}</span>
+          <span className={`actor-badge ${isHuman ? 'human' : 'ai'}`}>
+            {isHuman ? '👤 Human' : isAI ? '🤖 AI' : 'Unknown'}
+          </span>
+          <span className="event-action">{actionLabel}</span>
+        </div>
         <span className="event-time">{new Date(action.when).toLocaleString()}</span>
       </div>
+
+      {action.parameters?.description && (
+        <div className="event-description">
+          {action.parameters.description}
+        </div>
+      )}
+
+      {changedText && (
+        <div className="change-preview">
+          <div className="change-preview-label">Changed Text:</div>
+          <div className="change-preview-text">{changedText}</div>
+        </div>
+      )}
 
       {isExpanded && (
         <div className="event-details">
@@ -92,7 +130,7 @@ function ActionItem({
   );
 }
 
-export function VerifierEditHistory({ verificationResult }: VerifierEditHistoryProps) {
+export function VerifierEditHistory({ verificationResult, verifiedContent }: VerifierEditHistoryProps) {
   const [expandedActionIndex, setExpandedActionIndex] = useState<number | null>(null);
 
   const toggleActionDetails = (index: number) => {
@@ -117,7 +155,14 @@ export function VerifierEditHistory({ verificationResult }: VerifierEditHistoryP
 
   return (
     <div className="verifier-edit-history panel">
-      <h2>Edit History</h2>
+      <h2>Verified Document</h2>
+
+      {verifiedContent && (
+        <div className="verified-content-section">
+          <h3>Content</h3>
+          <textarea className="verified-content-display" value={verifiedContent} readOnly />
+        </div>
+      )}
 
       <div className="edit-history-content">
         <h3>C2PA Actions ({actions.length} actions)</h3>
@@ -132,6 +177,7 @@ export function VerifierEditHistory({ verificationResult }: VerifierEditHistoryP
                 index={index}
                 isExpanded={expandedActionIndex === index}
                 onToggle={() => toggleActionDetails(index)}
+                verifiedContent={verifiedContent}
               />
             ))
           )}

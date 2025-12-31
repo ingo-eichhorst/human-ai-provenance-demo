@@ -29,3 +29,251 @@
   text-align: center;
   padding: 2rem 1rem;
 }
+
+/* Verified Content Section */
+.verified-content-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid #444;
+}
+
+.verified-content-section h3 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+  color: #aaa;
+  font-weight: 500;
+}
+
+.verified-content-display {
+  width: 100%;
+  min-height: 200px;
+  max-height: 400px;
+  padding: 0.75rem;
+  background-color: #1a1a1a;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  resize: vertical;
+  overflow-y: auto;
+}
+
+/* Event List - Timeline Style */
+.event-list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-left: 2rem;
+}
+
+/* Timeline vertical line */
+.event-list::before {
+  content: '';
+  position: absolute;
+  left: 0.875rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, #646cff, #4caf50);
+  opacity: 0.3;
+}
+
+/* Event Item Cards */
+.event-item {
+  position: relative;
+  padding: 1rem;
+  background-color: #1a1a1a;
+  border: 2px solid #444;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.event-item:hover {
+  background-color: #222;
+  border-color: #555;
+  transform: translateX(2px);
+}
+
+/* Timeline dot */
+.event-item::before {
+  content: '';
+  position: absolute;
+  left: -2rem;
+  top: 1rem;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #646cff;
+  background-color: #1a1a1a;
+  z-index: 1;
+}
+
+/* Color coding by actor */
+.event-item.human-action {
+  border-left: 4px solid #646cff;
+}
+
+.event-item.human-action::before {
+  border-color: #646cff;
+  background-color: #646cff;
+}
+
+.event-item.ai-action {
+  border-left: 4px solid #4caf50;
+}
+
+.event-item.ai-action::before {
+  border-color: #4caf50;
+  background-color: #4caf50;
+}
+
+/* Event Header */
+.event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.event-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.event-number {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #999;
+  font-family: 'Courier New', monospace;
+}
+
+.actor-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.actor-badge.human {
+  background-color: rgba(100, 108, 255, 0.15);
+  color: #646cff;
+  border: 1px solid rgba(100, 108, 255, 0.3);
+}
+
+.actor-badge.ai {
+  background-color: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.event-action {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.event-time {
+  font-size: 0.75rem;
+  color: #999;
+  font-family: 'Courier New', monospace;
+}
+
+/* Event Description */
+.event-description {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid #646cff;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #ccc;
+  line-height: 1.5;
+}
+
+.ai-action .event-description {
+  border-left-color: #4caf50;
+}
+
+/* Change Preview - EMPHASIZED */
+.change-preview {
+  margin-bottom: 0.75rem;
+  padding: 0;
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.1));
+  border: 2px solid #ffc107;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.change-preview-label {
+  padding: 0.5rem 0.75rem;
+  background-color: rgba(255, 193, 7, 0.15);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #ffc107;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.change-preview-text {
+  padding: 0.75rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.3);
+  max-height: 150px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Event Details (expanded) */
+.event-details {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detail-row {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.detail-label {
+  min-width: 120px;
+  color: #999;
+  font-weight: 500;
+}
+
+.detail-value {
+  color: #ccc;
+  flex: 1;
+}
+
+.detail-value.source-type {
+  font-size: 0.75rem;
+  color: #999;
+  word-break: break-all;
+}
+
+.detail-value.hash-mono {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: #646cff;
+}

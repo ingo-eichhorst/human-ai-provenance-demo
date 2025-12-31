@@ -13,6 +13,7 @@ import './App.css';
 function App() {
   const { state, dispatch } = useAppContext();
   const [verificationResult, setVerificationResult] = useState<C2PAVerificationResult | null>(null);
+  const [verifiedContent, setVerifiedContent] = useState<string | null>(null);
 
   // Initialize crypto keys on mount
   useEffect(() => {
@@ -76,11 +77,17 @@ function App() {
       ) : (
         <div className="main-content">
           <div className="left-panel">
-            <VerifierPanel onVerificationComplete={setVerificationResult} />
+            <VerifierPanel
+              onVerificationComplete={setVerificationResult}
+              onContentExtracted={setVerifiedContent}
+            />
           </div>
 
           <div className="right-panel">
-            <VerifierEditHistory verificationResult={verificationResult} />
+            <VerifierEditHistory
+              verificationResult={verificationResult}
+              verifiedContent={verifiedContent}
+            />
           </div>
         </div>
       )}

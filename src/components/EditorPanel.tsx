@@ -6,6 +6,8 @@ import { createAIClientService } from '../services/AIClientService';
 import { c2paManifestService } from '../services/C2PAManifestService';
 import { scittService } from '../services/SCITTService';
 import { pdfExportService } from '../services/PDFExportService';
+import { imageExportService } from '../services/ImageExportService';
+import { embeddedManifestService } from '../services/EmbeddedManifestService';
 import { computeWordDiff, mergeAdjacentTokens } from '../utils/diff';
 import { StarterPrompts } from './StarterPrompts';
 import { DiffView } from './DiffView';
@@ -362,6 +364,36 @@ export function EditorPanel() {
     }
   }, [state.content.text, state.c2pa.manifest, state.c2pa.scittReceipt, dispatch]);
 
+  // Export as single file with embedded manifest
+  const handleExportEmbedded = useCallback(async () => {
+    if (!state.c2pa.manifest) return;
+
+    try {
+      // Add SCITT receipt to manifest if available
+      const manifestWithReceipt = state.c2pa.scittReceipt
+        ? { ...state.c2pa.manifest, scitt: state.c2pa.scittReceipt }
+        : state.c2pa.manifest;
+
+      // Embed manifest into content
+      const embeddedContent = embeddedManifestService.embedManifest(
+        state.content.text,
+        manifestWithReceipt
+      );
+
+      // Download as single file
+      const blob = new Blob([embeddedContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'document.c2pa.txt';
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Export failed';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+    }
+  }, [state.content.text, state.c2pa.manifest, state.c2pa.scittReceipt, dispatch]);
+
   // Export as PDF with embedded manifest
   const handleExportPDF = useCallback(async () => {
     if (!state.c2pa.manifest) return;
@@ -390,6 +422,51 @@ export function EditorPanel() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'PDF export failed';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
+    }
+  }, [state.content.text, state.c2pa.manifest, state.c2pa.scittReceipt, dispatch]);
+
+  // Export as signed image with C2PA manifest (verifiable at verify.contentauthenticity.org)
+  const handleExportSignedImage = useCallback(async () => {
+    if (!state.c2pa.manifest) return;
+
+    try {
+      dispatch({ type: 'SET_SIGNING', payload: true });
+
+      // 1. Render content as PNG image
+      const imageBlob = await imageExportService.renderContentAsImage(state.content.text);
+
+      // 2. Convert to base64
+      const imageBase64 = await imageExportService.blobToBase64(imageBlob);
+
+      // 3. Prepare manifest with SCITT receipt if available
+      const manifestWithReceipt = state.c2pa.scittReceipt
+        ? { ...state.c2pa.manifest, scitt: state.c2pa.scittReceipt }
+        : state.c2pa.manifest;
+
+      // 4. Send to backend for C2PA signing
+      const response = await fetch('http://localhost:3002/api/sign-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: imageBase64,
+          manifest: manifestWithReceipt,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to sign image');
+      }
+
+      const { signedImage } = await response.json();
+
+      // 5. Download signed image
+      imageExportService.downloadBase64AsFile(signedImage, 'document-signed.png');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Image export failed';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+    } finally {
+      dispatch({ type: 'SET_SIGNING', payload: false });
     }
   }, [state.content.text, state.c2pa.manifest, state.c2pa.scittReceipt, dispatch]);
 
@@ -489,18 +566,32 @@ export function EditorPanel() {
       {!state.pendingChange.data && state.c2pa.manifest && (
         <div className="export-controls">
           <button
+            className="export-btn export-btn-primary"
+            onClick={handleExportEmbedded}
+            disabled={state.ui.isSigning || state.ui.isAnchoring}
+          >
+            Export as .c2pa.txt
+          </button>
+          <button
             className="export-btn"
             onClick={handleExportFiles}
             disabled={state.ui.isSigning || state.ui.isAnchoring}
           >
-            Export as Files
+            Export as Separate Files
           </button>
           <button
             className="export-btn"
             onClick={handleExportPDF}
             disabled={state.ui.isSigning || state.ui.isAnchoring}
           >
-            Export as PDF
+            Export as PDF (Demo)
+          </button>
+          <button
+            className="export-btn"
+            onClick={handleExportSignedImage}
+            disabled={state.ui.isSigning || state.ui.isAnchoring}
+          >
+            Export as Signed Image
           </button>
         </div>
       )}
