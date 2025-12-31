@@ -23,29 +23,15 @@ export function createInitialState(): AppState {
       isGenerating: false
     },
     userInteractions: [],
-    provenance: {
-      events: [],
-      eventChainHash: ''
-    },
-    manifest: {
-      data: null,
-      hash: null,
-      signatureStatus: 'unsigned'
-    },
-    receipt: {
-      data: null,
-      status: 'missing'
-    },
-    attestation: {
-      data: {
-        toolName: TOOL_NAME,
-        version: APP_VERSION,
-        approved: true
-      },
-      status: 'approved'
+    c2pa: {
+      actions: [],
+      manifest: null,
+      scittReceipt: null
     },
     ui: {
       isProcessingAI: false,
+      isSigning: false,
+      isAnchoring: false,
       lastError: null,
       showStarterPrompts: true,
       activeTab: 'editor'
@@ -96,58 +82,58 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         }
       };
 
-    case 'ADD_EVENT':
+    case 'ADD_C2PA_ACTION':
       return {
         ...state,
-        provenance: {
-          ...state.provenance,
-          events: [...state.provenance.events, action.payload]
+        c2pa: {
+          ...state.c2pa,
+          actions: [...state.c2pa.actions, action.payload]
         }
       };
 
-    case 'UPDATE_EVENT_CHAIN':
+    case 'UPDATE_C2PA_MANIFEST':
       return {
         ...state,
-        provenance: {
-          ...state.provenance,
-          eventChainHash: action.payload
+        c2pa: {
+          ...state.c2pa,
+          manifest: action.payload
         }
       };
 
-    case 'UPDATE_MANIFEST':
+    case 'UPDATE_SCITT_RECEIPT':
       return {
         ...state,
-        manifest: {
-          ...state.manifest,
-          data: action.payload,
-          signatureStatus: 'valid'
+        c2pa: {
+          ...state.c2pa,
+          scittReceipt: action.payload
         }
       };
 
-    case 'UPDATE_MANIFEST_HASH':
+    case 'CLEAR_C2PA':
       return {
         ...state,
-        manifest: {
-          ...state.manifest,
-          hash: action.payload
+        c2pa: {
+          actions: [],
+          manifest: null,
+          scittReceipt: null
         }
       };
 
-    case 'UPDATE_MANIFEST_STATUS':
+    case 'SET_SIGNING':
       return {
         ...state,
-        manifest: {
-          ...state.manifest,
-          signatureStatus: action.payload
+        ui: {
+          ...state.ui,
+          isSigning: action.payload
         }
       };
 
-    case 'UPDATE_RECEIPT':
+    case 'SET_ANCHORING':
       return {
         ...state,
-        receipt: {
-          data: action.payload,
-          status: 'present'
+        ui: {
+          ...state.ui,
+          isAnchoring: action.payload
         }
       };
 

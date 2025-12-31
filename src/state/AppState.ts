@@ -1,5 +1,5 @@
-import { ProvenanceEvent, PendingChange, UserInteraction } from '../types/provenance';
-import { Manifest, Receipt, Attestation } from '../types/bundle';
+import { PendingChange, UserInteraction } from '../types/provenance';
+import type { C2PAAction, C2PAExternalManifest, SCITTReceipt } from '../types/c2pa';
 
 export interface AppState {
   config: {
@@ -7,7 +7,7 @@ export interface AppState {
     initialized: boolean;
   };
   crypto: {
-    publicKey: string | null;
+    publicKey: CryptoKey | null;
     privateKey: CryptoKey | null;
   };
   content: {
@@ -20,25 +20,16 @@ export interface AppState {
     isGenerating: boolean;
   };
   userInteractions: UserInteraction[];
-  provenance: {
-    events: ProvenanceEvent[];
-    eventChainHash: string;
-  };
-  manifest: {
-    data: Manifest | null;
-    hash: string | null;
-    signatureStatus: 'valid' | 'invalid' | 'unsigned';
-  };
-  receipt: {
-    data: Receipt | null;
-    status: 'present' | 'missing';
-  };
-  attestation: {
-    data: Attestation;
-    status: 'approved';
+  // Replace provenance/manifest/receipt/attestation with c2pa
+  c2pa: {
+    actions: C2PAAction[];
+    manifest: C2PAExternalManifest | null;
+    scittReceipt: SCITTReceipt | null;
   };
   ui: {
     isProcessingAI: boolean;
+    isSigning: boolean;
+    isAnchoring: boolean; // Track SCITT submission
     lastError: string | null;
     showStarterPrompts: boolean;
     activeTab: 'editor' | 'verifier';
