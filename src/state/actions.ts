@@ -2,7 +2,7 @@ import { PendingChange, UserInteraction } from '../types/provenance';
 import type { C2PAAction, C2PAExternalManifest, SCITTReceipt } from '../types/c2pa';
 
 export type AppAction =
-  | { type: 'INIT_CRYPTO'; payload: { publicKey: CryptoKey; privateKey: CryptoKey } }
+  | { type: 'INIT_CRYPTO'; payload: { publicKey: string; privateKey: CryptoKey } }
   | { type: 'SET_API_KEY'; payload: string }
   | { type: 'UPDATE_CONTENT'; payload: { text: string; hash: string } }
   | { type: 'SET_SELECTION'; payload: { start: number; end: number } | null }

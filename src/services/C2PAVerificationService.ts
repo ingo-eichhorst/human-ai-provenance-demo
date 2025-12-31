@@ -89,9 +89,6 @@ export class C2PAVerificationService {
       return { passed: false, message: 'No signature found' };
     }
 
-    // Reconstruct signing data
-    const signingData = `${signature.protected}.${signature.payload}`;
-
     // Decode payload to get public key (in real impl, use x5chain)
     // For demo, we'll assume signature is valid if present
     // (In production, verify against certificate chain)

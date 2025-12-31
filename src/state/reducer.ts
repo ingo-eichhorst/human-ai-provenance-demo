@@ -1,7 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { AppState } from './AppState';
 import { AppAction } from './actions';
-import { APP_VERSION, TOOL_NAME } from '../utils/constants';
 
 export function createInitialState(): AppState {
   return {

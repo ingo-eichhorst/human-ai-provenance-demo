@@ -7,7 +7,7 @@ export interface AppState {
     initialized: boolean;
   };
   crypto: {
-    publicKey: CryptoKey | null;
+    publicKey: string | null;  // JWK string
     privateKey: CryptoKey | null;
   };
   content: {

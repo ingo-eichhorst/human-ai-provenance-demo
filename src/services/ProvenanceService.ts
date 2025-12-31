@@ -2,7 +2,7 @@ import type { C2PAAction } from '../types/c2pa';
 import { CryptoService } from './CryptoService';
 
 export class ProvenanceService {
-  constructor(private cryptoService: CryptoService) {}
+  constructor(_cryptoService: CryptoService) {}
 
   /**
    * Create a human edit action (C2PA format)

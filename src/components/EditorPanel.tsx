@@ -3,6 +3,9 @@ import { useAppContext } from '../state/AppContext';
 import { cryptoService } from '../services/CryptoService';
 import { createProvenanceService } from '../services/ProvenanceService';
 import { createAIClientService } from '../services/AIClientService';
+import { c2paManifestService } from '../services/C2PAManifestService';
+import { scittService } from '../services/SCITTService';
+import { pdfExportService } from '../services/PDFExportService';
 import { computeWordDiff, mergeAdjacentTokens } from '../utils/diff';
 import { StarterPrompts } from './StarterPrompts';
 import { DiffView } from './DiffView';
@@ -12,7 +15,7 @@ import './EditorPanel.css';
 const provenanceService = createProvenanceService(cryptoService);
 const aiClientService = createAIClientService(cryptoService);
 
-export function EditorPanel({ onExportBundle }: { onExportBundle: () => void }) {
+export function EditorPanel() {
   const { state, dispatch } = useAppContext();
   const [aiInstruction, setAiInstruction] = useState('');
   const [localText, setLocalText] = useState('');
@@ -242,9 +245,9 @@ export function EditorPanel({ onExportBundle }: { onExportBundle: () => void }) 
       // Determine range
       const range = pending.range || { start: 0, end: pending.proposedText.length };
 
-      // Create provenance event with decision metadata
-      const event = pending.aiMetadata
-        ? provenanceService.createAIEvent({
+      // Create C2PA action
+      const action = pending.aiMetadata
+        ? provenanceService.createAIAction({
             range,
             beforeText: pending.originalText,
             afterText: pending.proposedText,
@@ -252,61 +255,42 @@ export function EditorPanel({ onExportBundle }: { onExportBundle: () => void }) 
             afterHash: pending.proposedHash,
             model: pending.aiMetadata.model,
             promptHash: pending.aiMetadata.promptHash,
-            responseHash: pending.aiMetadata.responseHash,
-            decision: {
-              pendingChangeId: pending.id,
-              source: pending.source
-            }
+            responseHash: pending.aiMetadata.responseHash
           })
-        : provenanceService.createHumanEvent({
+        : provenanceService.createHumanAction({
             range,
             beforeText: pending.originalText,
             afterText: pending.proposedText,
             beforeHash: pending.originalHash,
-            afterHash: pending.proposedHash,
-            decision: {
-              pendingChangeId: pending.id,
-              source: pending.source
-            }
+            afterHash: pending.proposedHash
           });
 
-      dispatch({ type: 'ADD_EVENT', payload: event });
+      dispatch({ type: 'ADD_C2PA_ACTION', payload: action });
 
-      // Update event chain
-      const newEvents = [...state.provenance.events, event];
-      const newChainHash = await provenanceService.computeEventChainHash(newEvents);
-      dispatch({ type: 'UPDATE_EVENT_CHAIN', payload: newChainHash });
+      // Build C2PA manifest with all actions
+      const newActions = [...state.c2pa.actions, action];
 
-      // Build and sign manifest
-      const manifestData = provenanceService.buildManifest(
-        newEvents,
-        pending.proposedHash,
-        newChainHash
-      );
-      const manifestToSign = JSON.stringify(manifestData, Object.keys(manifestData).sort());
-      const signature = await cryptoService.sign(manifestToSign, state.crypto.privateKey!);
+      dispatch({ type: 'SET_SIGNING', payload: true });
+      try {
+        const manifest = await c2paManifestService.createExternalManifest(
+          pending.proposedText,
+          newActions,
+          state.crypto.privateKey!
+        );
 
-      const signedManifest = {
-        ...manifestData,
-        signature,
-        publicKey: state.crypto.publicKey!
-      };
+        dispatch({ type: 'UPDATE_C2PA_MANIFEST', payload: manifest });
 
-      dispatch({ type: 'UPDATE_MANIFEST', payload: signedManifest });
-
-      // Generate demo receipt
-      // Use hashObject for canonical JSON (sorted keys)
-      const manifestHash = await cryptoService.hashObject(signedManifest);
-      const receiptSig = await cryptoService.sign(manifestHash, state.crypto.privateKey!);
-
-      dispatch({
-        type: 'UPDATE_RECEIPT',
-        payload: {
-          manifestHash,
-          timestamp: Date.now(),
-          receiptSignature: receiptSig
-        }
-      });
+        // Submit to SCITT for transparency log receipt
+        dispatch({ type: 'SET_ANCHORING', payload: true });
+        const scittReceipt = await scittService.submitToLog(manifest);
+        dispatch({ type: 'UPDATE_SCITT_RECEIPT', payload: scittReceipt });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to create manifest';
+        dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      } finally {
+        dispatch({ type: 'SET_SIGNING', payload: false });
+        dispatch({ type: 'SET_ANCHORING', payload: false });
+      }
 
       // Clear pending change
       dispatch({ type: 'ACCEPT_PENDING_CHANGE' });
@@ -314,7 +298,7 @@ export function EditorPanel({ onExportBundle }: { onExportBundle: () => void }) 
       // Clear selection
       dispatch({ type: 'SET_SELECTION', payload: null });
     },
-    [state.pendingChange.data, state.provenance.events, state.crypto, dispatch]
+    [state.pendingChange.data, state.c2pa.actions, state.crypto, dispatch]
   );
 
   // Handle rejecting pending change
@@ -340,6 +324,74 @@ export function EditorPanel({ onExportBundle }: { onExportBundle: () => void }) 
     // Reset local text to committed content
     setLocalText(state.content.text);
   }, [state.pendingChange.data, state.content.text, dispatch]);
+
+  // Export as dual files (content.txt + manifest.c2pa.json)
+  const handleExportFiles = useCallback(async () => {
+    if (!state.c2pa.manifest) return;
+
+    try {
+      const contentFilename = 'document.txt';
+      const manifestFilename = 'document.c2pa.json';
+
+      // Add SCITT receipt to manifest if available
+      const manifestWithReceipt = state.c2pa.scittReceipt
+        ? { ...state.c2pa.manifest, scitt: state.c2pa.scittReceipt }
+        : state.c2pa.manifest;
+
+      // Download content file
+      const contentBlob = new Blob([state.content.text], { type: 'text/plain' });
+      const contentUrl = URL.createObjectURL(contentBlob);
+      const contentLink = document.createElement('a');
+      contentLink.href = contentUrl;
+      contentLink.download = contentFilename;
+      contentLink.click();
+      URL.revokeObjectURL(contentUrl);
+
+      // Download manifest file
+      const manifestJson = c2paManifestService.serializeManifest(manifestWithReceipt);
+      const manifestBlob = new Blob([manifestJson], { type: 'application/json' });
+      const manifestUrl = URL.createObjectURL(manifestBlob);
+      const manifestLink = document.createElement('a');
+      manifestLink.href = manifestUrl;
+      manifestLink.download = manifestFilename;
+      manifestLink.click();
+      URL.revokeObjectURL(manifestUrl);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Export failed';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+    }
+  }, [state.content.text, state.c2pa.manifest, state.c2pa.scittReceipt, dispatch]);
+
+  // Export as PDF with embedded manifest
+  const handleExportPDF = useCallback(async () => {
+    if (!state.c2pa.manifest) return;
+
+    try {
+      // Add SCITT receipt to manifest if available
+      const manifestWithReceipt = state.c2pa.scittReceipt
+        ? { ...state.c2pa.manifest, scitt: state.c2pa.scittReceipt }
+        : state.c2pa.manifest;
+
+      // Generate PDF
+      const pdfBytes = await pdfExportService.createPDFWithManifest(
+        state.content.text,
+        manifestWithReceipt,
+        'A2UI Document'
+      );
+
+      // Download PDF
+      const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'document.pdf';
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'PDF export failed';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+    }
+  }, [state.content.text, state.c2pa.manifest, state.c2pa.scittReceipt, dispatch]);
 
   // Compute diff for pending change
   const diffTokens = state.pendingChange.data
@@ -433,11 +485,24 @@ export function EditorPanel({ onExportBundle }: { onExportBundle: () => void }) 
         </div>
       )}
 
-      {/* Export button */}
-      {!state.pendingChange.data && (
-        <button className="export-btn" onClick={onExportBundle} disabled={!state.manifest.data}>
-          Copy Bundle
-        </button>
+      {/* Export buttons */}
+      {!state.pendingChange.data && state.c2pa.manifest && (
+        <div className="export-controls">
+          <button
+            className="export-btn"
+            onClick={handleExportFiles}
+            disabled={state.ui.isSigning || state.ui.isAnchoring}
+          >
+            Export as Files
+          </button>
+          <button
+            className="export-btn"
+            onClick={handleExportPDF}
+            disabled={state.ui.isSigning || state.ui.isAnchoring}
+          >
+            Export as PDF
+          </button>
+        </div>
       )}
     </div>
   );
