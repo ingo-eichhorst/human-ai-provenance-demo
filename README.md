@@ -489,9 +489,3 @@ This demo is an educational implementation inspired by:
 - **C2PA (Coalition for Content Provenance and Authenticity)** - Industry standard
 - **SCITT (Supply Chain Integrity, Transparency and Trust)** - IETF standard
 - **IPTC** - International Press Telecommunications Council (Digital Source Type vocabulary)
-
----
-
-**Version:** 0.1.0
-**Last Updated:** 2025-12-31
-**For questions or issues:** See documentation in `CLAUDE.md`, `C2PA_Integration.md`, `PRD_final.md`, and `SPEC.md`

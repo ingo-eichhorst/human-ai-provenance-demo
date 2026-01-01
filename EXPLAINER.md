@@ -22,12 +22,12 @@ Think of it as a **text editor with a built-in notary**. Every time you:
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  YOU WRITE: "The cat sat on the mat"                    │
-│  ↓                                                       │
+│  ↓                                                      │
 │  SYSTEM RECORDS:                                        │
-│    ✓ What changed (before/after hashes)                │
-│    ✓ Who did it (human edit)                           │
-│    ✓ When it happened (timestamp)                      │
-│    ✓ Digital signature (cryptographic proof)           │
+│    ✓ What changed (before/after hashes)                 │
+│    ✓ Who did it (human edit)                            │
+│    ✓ When it happened (timestamp)                       │
+│    ✓ Digital signature (cryptographic proof)            │
 └─────────────────────────────────────────────────────────┘
 ```
 
