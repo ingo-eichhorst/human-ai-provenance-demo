@@ -73,6 +73,15 @@ export class AIClientService {
     }
 
     const data = await response.json();
+
+    // Validate response structure
+    if (!data.choices || !Array.isArray(data.choices) || data.choices.length === 0) {
+      throw new Error('Invalid API response: missing choices array');
+    }
+    if (!data.choices[0].message || typeof data.choices[0].message.content !== 'string') {
+      throw new Error('Invalid API response: missing message content');
+    }
+
     const generatedText = data.choices[0].message.content.trim();
 
     // Compute hashes
@@ -130,6 +139,15 @@ export class AIClientService {
     }
 
     const data = await response.json();
+
+    // Validate response structure
+    if (!data.choices || !Array.isArray(data.choices) || data.choices.length === 0) {
+      throw new Error('Invalid API response: missing choices array');
+    }
+    if (!data.choices[0].message || typeof data.choices[0].message.content !== 'string') {
+      throw new Error('Invalid API response: missing message content');
+    }
+
     const rewrittenText = data.choices[0].message.content.trim();
 
     // Compute hashes

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { cryptoService } from './CryptoService';
+import { cryptoService, CryptoService } from './CryptoService';
 import type {
   C2PAAction,
   C2PAClaim,
@@ -57,11 +57,11 @@ export class C2PAManifestService {
       kid: 'demo-key-1', // Key ID
     };
 
-    // Encode protected headers
-    const protectedBase64 = btoa(JSON.stringify(protectedHeaders));
+    // Encode protected headers (Unicode-safe base64)
+    const protectedBase64 = CryptoService.utf8ToBase64(JSON.stringify(protectedHeaders));
 
-    // Encode payload (claim)
-    const payloadBase64 = btoa(JSON.stringify(claim));
+    // Encode payload (claim) - use canonical JSON for deterministic signing
+    const payloadBase64 = CryptoService.utf8ToBase64(cryptoService.canonicalStringify(claim));
 
     // Create signing data: protected || payload
     const signingData = `${protectedBase64}.${payloadBase64}`;

@@ -60,7 +60,7 @@ export class CryptoService {
   /**
    * Recursively sort object keys for deterministic JSON
    */
-  private canonicalStringify(obj: any): string {
+  canonicalStringify(obj: any): string {
     if (obj === null || typeof obj !== 'object') {
       return JSON.stringify(obj);
     }
@@ -76,6 +76,22 @@ export class CryptoService {
     });
 
     return '{' + pairs.join(',') + '}';
+  }
+
+  /**
+   * Convert UTF-8 string to Base64 (Unicode-safe)
+   * Uses URI encoding to handle non-Latin1 characters
+   */
+  static utf8ToBase64(str: string): string {
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+
+  /**
+   * Convert Base64 to UTF-8 string (Unicode-safe)
+   * Uses URI decoding to handle non-Latin1 characters
+   */
+  static base64ToUtf8(base64: string): string {
+    return decodeURIComponent(escape(atob(base64)));
   }
 
   /**

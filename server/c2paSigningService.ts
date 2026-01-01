@@ -53,7 +53,15 @@ export async function signImageWithC2PA(
     console.error('C2PA signing error:', error);
     throw new Error(`Failed to sign image: ${error instanceof Error ? error.message : 'Unknown error'}`);
   } finally {
-    try { unlinkSync(inputPath); } catch {}
-    try { unlinkSync(outputPath); } catch {}
+    try {
+      unlinkSync(inputPath);
+    } catch (err) {
+      console.warn(`Failed to clean up temp input file ${inputPath}:`, err instanceof Error ? err.message : err);
+    }
+    try {
+      unlinkSync(outputPath);
+    } catch (err) {
+      console.warn(`Failed to clean up temp output file ${outputPath}:`, err instanceof Error ? err.message : err);
+    }
   }
 }

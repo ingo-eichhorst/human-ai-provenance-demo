@@ -1,5 +1,6 @@
 import type { C2PAExternalManifest } from '../types/c2pa';
 import { C2PA_MANIFEST_START_MARKER, C2PA_MANIFEST_END_MARKER } from '../utils/constants';
+import { CryptoService } from './CryptoService';
 
 /**
  * Result of extracting an embedded manifest
@@ -27,7 +28,7 @@ class EmbeddedManifestService {
    */
   embedManifest(content: string, manifest: C2PAExternalManifest): string {
     const manifestJson = JSON.stringify(manifest, null, 2);
-    const manifestBase64 = btoa(manifestJson);
+    const manifestBase64 = CryptoService.utf8ToBase64(manifestJson);
 
     const footer = [
       '', // Blank line separator
@@ -61,10 +62,10 @@ class EmbeddedManifestService {
     const base64Start = startIndex + C2PA_MANIFEST_START_MARKER.length;
     const base64Content = embeddedContent.slice(base64Start, endIndex).trim();
 
-    // Decode base64
+    // Decode base64 (Unicode-safe)
     let manifestJson: string;
     try {
-      manifestJson = atob(base64Content);
+      manifestJson = CryptoService.base64ToUtf8(base64Content);
     } catch (e) {
       throw new Error('Failed to decode manifest: invalid base64 encoding');
     }

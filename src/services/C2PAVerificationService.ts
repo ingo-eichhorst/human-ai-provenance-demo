@@ -1,4 +1,4 @@
-import { cryptoService } from './CryptoService';
+import { cryptoService, CryptoService } from './CryptoService';
 import { scittService } from './SCITTService';
 import type {
   C2PAExternalManifest,
@@ -60,26 +60,42 @@ export class C2PAVerificationService {
   }
 
   private async verifyContentHash(content: string, manifest: C2PAExternalManifest): Promise<CheckResult> {
-    // Find hash assertion
-    const hashAssertion = manifest.claim.assertions.find((a) => a.label === 'c2pa.hash.data')
-      ?.data as C2PAHashAssertion | undefined;
-
-    if (!hashAssertion) {
-      return { passed: false, message: 'No hash assertion found' };
+    const signature = manifest.claim.signature;
+    if (!signature?.payload) {
+      return { passed: false, message: 'No signed payload found' };
     }
 
-    // Compute content hash
-    const contentHash = await cryptoService.hash(content);
+    try {
+      // CRITICAL: Get claim from SIGNED payload, not from potentially tampered manifest.claim
+      const signedClaimJson = CryptoService.base64ToUtf8(signature.payload);
+      const signedClaim = JSON.parse(signedClaimJson);
 
-    // Compare
-    if (contentHash !== hashAssertion.hash) {
+      // Find hash assertion in the signed claim
+      const hashAssertion = signedClaim.assertions?.find((a: any) => a.label === 'c2pa.hash.data')
+        ?.data as C2PAHashAssertion | undefined;
+
+      if (!hashAssertion) {
+        return { passed: false, message: 'No hash assertion found in signed claim' };
+      }
+
+      // Compute content hash
+      const contentHash = await cryptoService.hash(content);
+
+      // Compare
+      if (contentHash !== hashAssertion.hash) {
+        return {
+          passed: false,
+          message: `Content hash mismatch: expected ${hashAssertion.hash}, got ${contentHash}`,
+        };
+      }
+
+      return { passed: true, message: 'Content hash matches' };
+    } catch (error) {
       return {
         passed: false,
-        message: `Content hash mismatch: expected ${hashAssertion.hash}, got ${contentHash}`,
+        message: `Hash verification failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
-
-    return { passed: true, message: 'Content hash matches' };
   }
 
   private async verifySignature(manifest: C2PAExternalManifest): Promise<CheckResult> {
@@ -104,10 +120,27 @@ export class C2PAVerificationService {
         signature.publicKey
       );
 
-      return {
-        passed: isValid,
-        message: isValid ? 'Signature verified' : 'Invalid signature'
-      };
+      if (!isValid) {
+        return { passed: false, message: 'Invalid signature' };
+      }
+
+      // CRITICAL: Verify that manifest.claim matches the signed payload
+      // Decode signed payload and compare to manifest.claim (without signature field)
+      const signedClaimJson = CryptoService.base64ToUtf8(signature.payload);
+      const signedClaim = JSON.parse(signedClaimJson);
+
+      // manifest.claim includes signature, signedClaim doesn't - remove for comparison
+      const { signature: _, ...claimWithoutSig } = manifest.claim;
+
+      // Use canonical JSON for comparison to avoid key order issues
+      const signedClaimCanonical = cryptoService.canonicalStringify(signedClaim);
+      const claimCanonical = cryptoService.canonicalStringify(claimWithoutSig);
+
+      if (signedClaimCanonical !== claimCanonical) {
+        return { passed: false, message: 'Claim data does not match signed payload' };
+      }
+
+      return { passed: true, message: 'Signature verified' };
     } catch (error) {
       return {
         passed: false,

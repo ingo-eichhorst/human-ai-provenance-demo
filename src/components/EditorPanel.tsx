@@ -106,20 +106,27 @@ export function EditorPanel() {
   const handleTextAreaBlur = useCallback(
     async () => {
       if (localText !== state.content.text) {
-        const originalText = state.content.text;
-        const originalHash = state.content.hash;
-        const proposedHash = await cryptoService.hash(localText);
+        try {
+          const originalText = state.content.text;
+          const originalHash = state.content.hash;
+          const proposedHash = await cryptoService.hash(localText);
 
-        dispatch({
-          type: 'CREATE_PENDING_CHANGE',
-          payload: {
-            source: 'manual-edit',
-            originalText,
-            proposedText: localText,
-            originalHash,
-            proposedHash
-          }
-        });
+          dispatch({
+            type: 'CREATE_PENDING_CHANGE',
+            payload: {
+              source: 'manual-edit',
+              originalText,
+              proposedText: localText,
+              originalHash,
+              proposedHash
+            }
+          });
+        } catch (error) {
+          dispatch({
+            type: 'SET_ERROR',
+            payload: error instanceof Error ? error.message : 'Failed to compute hash'
+          });
+        }
       }
     },
     [localText, state.content.text, state.content.hash, dispatch]

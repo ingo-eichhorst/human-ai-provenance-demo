@@ -1,5 +1,5 @@
 import type { SCITTReceipt, C2PAExternalManifest } from '../types/c2pa';
-import { cryptoService } from './CryptoService';
+import { cryptoService, CryptoService } from './CryptoService';
 
 // SCITT service options
 interface SCITTServiceConfig {
@@ -45,7 +45,7 @@ export class SCITTService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          manifest: btoa(JSON.stringify(manifest)),
+          manifest: CryptoService.utf8ToBase64(cryptoService.canonicalStringify(manifest)),
         }),
       });
 
@@ -72,8 +72,8 @@ export class SCITTService {
    * Generate demo receipt for offline testing
    */
   private async generateDemoReceipt(manifest: C2PAExternalManifest): Promise<SCITTReceipt> {
-    // Simple receipt: hash of manifest + timestamp
-    const manifestJson = JSON.stringify(manifest);
+    // Simple receipt: hash of manifest + timestamp (use canonical JSON for deterministic hash)
+    const manifestJson = cryptoService.canonicalStringify(manifest);
     const manifestHash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(manifestJson));
     const hashHex = cryptoService.bufferToHex(manifestHash);
 
@@ -86,7 +86,7 @@ export class SCITTService {
     };
 
     return {
-      receipt: btoa(JSON.stringify(demoReceipt)),
+      receipt: CryptoService.utf8ToBase64(JSON.stringify(demoReceipt)),
       serviceUrl: this.config.serviceUrl,
       logId: this.config.logId,
       timestamp: demoReceipt.timestamp,
@@ -100,12 +100,13 @@ export class SCITTService {
     if (receipt.serviceUrl.startsWith('demo://')) {
       // Demo receipt verification: just check hash
       // Exclude scitt field from hash computation (it wasn't there when receipt was created)
+      // Use canonical JSON for deterministic hash comparison
       const { scitt, ...manifestWithoutScitt } = manifest;
-      const manifestJson = JSON.stringify(manifestWithoutScitt);
+      const manifestJson = cryptoService.canonicalStringify(manifestWithoutScitt);
       const manifestHash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(manifestJson));
       const hashHex = cryptoService.bufferToHex(manifestHash);
 
-      const receiptData = JSON.parse(atob(receipt.receipt));
+      const receiptData = JSON.parse(CryptoService.base64ToUtf8(receipt.receipt));
       return receiptData.manifestHash === hashHex;
     }
 
