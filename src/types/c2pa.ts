@@ -16,7 +16,7 @@ export type DigitalSourceType =
 export interface C2PAAction {
   action: C2PAActionType;
   when: string; // ISO 8601 timestamp
-  softwareAgent?: string; // e.g., "A2UI Provenance Demo/1.0.0"
+  softwareAgent?: string; // e.g., "Human+AI Provenance Demo/1.0.0"
   digitalSourceType?: DigitalSourceType;
   parameters?: {
     description?: string;
@@ -75,6 +75,7 @@ export interface COSESignature {
   };
   payload: string; // Base64-encoded claim data
   signature: string; // Base64-encoded signature bytes
+  publicKey: string; // JWK-encoded public key for verification
 }
 
 // ============================================================================

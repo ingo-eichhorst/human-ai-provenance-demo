@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Server certificates (should be generated locally)
+server/certs/*.pem

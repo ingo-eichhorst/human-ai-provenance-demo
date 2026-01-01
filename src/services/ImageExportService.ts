@@ -48,7 +48,7 @@ export class ImageExportService {
     // Add watermark
     ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
     ctx.font = '10px sans-serif';
-    ctx.fillText('A2UI Provenance Demo - C2PA Signed', margin, height - 20);
+    ctx.fillText('Human+AI Provenance Demo - C2PA Signed', margin, height - 20);
 
     // Convert to blob
     return new Promise((resolve, reject) => {

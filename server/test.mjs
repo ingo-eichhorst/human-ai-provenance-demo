@@ -10,8 +10,8 @@ const manifest = {
   claim: {
     'dc:format': 'image/png',
     instanceId: 'test-' + Date.now(),
-    claimGenerator: 'A2UI Provenance Demo/1.0.0',
-    claimGeneratorInfo: { name: 'A2UI Provenance Demo', version: '1.0.0' },
+    claimGenerator: 'Human+AI Provenance Demo/1.0.0',
+    claimGeneratorInfo: { name: 'Human+AI Provenance Demo', version: '1.0.0' },
     assertions: [
       {
         label: 'c2pa.actions',
@@ -20,7 +20,7 @@ const manifest = {
             {
               action: 'c2pa.created',
               when: new Date().toISOString(),
-              softwareAgent: 'A2UI Provenance Demo/1.0.0'
+              softwareAgent: 'Human+AI Provenance Demo/1.0.0'
             }
           ]
         }

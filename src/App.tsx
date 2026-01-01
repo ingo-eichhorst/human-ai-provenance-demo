@@ -19,7 +19,7 @@ function App() {
   useEffect(() => {
     async function initializeCrypto() {
       if (!state.config.initialized) {
-        console.warn('A2UI Provenance Demo - NOT FOR PRODUCTION USE');
+        console.warn('Human+AI Provenance Demo - NOT FOR PRODUCTION USE');
         console.info('Keys are ephemeral and not secured. Do not use with sensitive content.');
 
         try {

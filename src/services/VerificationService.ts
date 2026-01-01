@@ -1,12 +1,10 @@
 import { Bundle } from '../types/bundle';
 import { VerificationResult, CheckResult } from '../types/verification';
 import { CryptoService } from './CryptoService';
-import { ProvenanceService } from './ProvenanceService';
 
 export class VerificationService {
   constructor(
-    private cryptoService: CryptoService,
-    private provenanceService: ProvenanceService
+    private cryptoService: CryptoService
   ) {}
 
   /**
@@ -18,22 +16,19 @@ export class VerificationService {
       bundleHashCheck,
       contentHashCheck,
       signatureCheck,
-      receiptCheck,
-      eventChainCheck
+      receiptCheck
     ] = await Promise.all([
       this.verifyBundleHash(bundle),
       this.verifyContentHash(bundle),
       this.verifySignature(bundle),
-      this.verifyReceipt(bundle),
-      this.verifyEventChain(bundle)
+      this.verifyReceipt(bundle)
     ]);
 
     const checks = {
       bundleHash: bundleHashCheck,
       contentHash: contentHashCheck,
       signature: signatureCheck,
-      receipt: receiptCheck,
-      eventChain: eventChainCheck
+      receipt: receiptCheck
     };
 
     const overallStatus = Object.values(checks).every(check => check.passed)
@@ -210,42 +205,11 @@ export class VerificationService {
     }
   }
 
-  /**
-   * Verify event chain
-   */
-  private async verifyEventChain(bundle: Bundle): Promise<CheckResult> {
-    try {
-      const recomputedChain = await this.provenanceService.computeEventChainHash(
-        bundle.manifest.events
-      );
-
-      if (recomputedChain === bundle.manifest.eventChainHash) {
-        return {
-          passed: true,
-          message: 'Event chain valid',
-          details: 'This check recomputes the cumulative hash of all provenance events and compares it to the stored chain hash. Each event\'s hash includes all previous events, creating a tamper-evident chain. Passing this check guarantees the complete edit history (both human and AI edits) has not been altered, reordered, or partially deleted.'
-        };
-      } else {
-        return {
-          passed: false,
-          message: 'Event chain mismatch',
-          details: 'Event history was modified'
-        };
-      }
-    } catch (error) {
-      return {
-        passed: false,
-        message: 'Event chain verification failed',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  }
 }
 
 // Export factory function
 export function createVerificationService(
-  cryptoService: CryptoService,
-  provenanceService: ProvenanceService
+  cryptoService: CryptoService
 ): VerificationService {
-  return new VerificationService(cryptoService, provenanceService);
+  return new VerificationService(cryptoService);
 }

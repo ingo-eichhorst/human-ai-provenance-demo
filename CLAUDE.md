@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A2UI Provenance Demo is an educational demonstration of cryptographic content provenance using **C2PA (Coalition for Content Provenance and Authenticity)** standards in an AI-assisted text editing workflow. It tracks human and AI edits using C2PA external manifests, IPTC Digital Source Types, and SCITT transparency log integration.
+Human+AI Provenance Demo is an educational demonstration of cryptographic content provenance using **C2PA (Coalition for Content Provenance and Authenticity)** standards in an AI-assisted text editing workflow. It tracks human and AI edits using C2PA external manifests, IPTC Digital Source Types, and SCITT transparency log integration.
 
 **⚠️ This is a proof-of-concept demo, NOT production code.**
 
@@ -199,7 +199,7 @@ UI Components → AppContext (dispatch) → Reducer → AppState → Services
 const action: C2PAAction = {
   action: 'c2pa.edited',
   when: new Date().toISOString(),
-  softwareAgent: 'A2UI Provenance Demo/1.0.0',
+  softwareAgent: 'Human+AI Provenance Demo/1.0.0',
   digitalSourceType: 'http://cv.iptc.org/newscodes/digitalsourcetype/humanEdits',
   parameters: {
     description: 'Manual text edit',
@@ -215,7 +215,7 @@ const action: C2PAAction = {
 const action: C2PAAction = {
   action: 'c2pa.edited',
   when: new Date().toISOString(),
-  softwareAgent: 'A2UI Provenance Demo/1.0.0',
+  softwareAgent: 'Human+AI Provenance Demo/1.0.0',
   digitalSourceType: 'http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia',
   parameters: {
     description: 'AI-generated content',

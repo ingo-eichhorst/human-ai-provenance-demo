@@ -89,11 +89,31 @@ export class C2PAVerificationService {
       return { passed: false, message: 'No signature found' };
     }
 
-    // Decode payload to get public key (in real impl, use x5chain)
-    // For demo, we'll assume signature is valid if present
-    // (In production, verify against certificate chain)
+    if (!signature.publicKey) {
+      return { passed: false, message: 'No public key in signature' };
+    }
 
-    return { passed: true, message: 'Signature present (demo mode)' };
+    try {
+      // Reconstruct signed data: protected || payload
+      const signedData = `${signature.protected}.${signature.payload}`;
+
+      // Verify using CryptoService
+      const isValid = await cryptoService.verify(
+        signedData,
+        signature.signature,
+        signature.publicKey
+      );
+
+      return {
+        passed: isValid,
+        message: isValid ? 'Signature verified' : 'Invalid signature'
+      };
+    } catch (error) {
+      return {
+        passed: false,
+        message: `Verification failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
   }
 
   private async verifySCITT(manifest: C2PAExternalManifest): Promise<CheckResult> {

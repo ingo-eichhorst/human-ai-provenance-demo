@@ -17,7 +17,7 @@ export class ProvenanceService {
     return {
       action: 'c2pa.edited',
       when: new Date().toISOString(),
-      softwareAgent: 'A2UI Provenance Demo/1.0.0',
+      softwareAgent: 'Human+AI Provenance Demo/1.0.0',
       digitalSourceType: 'http://cv.iptc.org/newscodes/digitalsourcetype/humanEdits',
       parameters: {
         description: 'Human text edit',
@@ -44,7 +44,7 @@ export class ProvenanceService {
     return {
       action: 'c2pa.edited',
       when: new Date().toISOString(),
-      softwareAgent: 'A2UI Provenance Demo/1.0.0',
+      softwareAgent: 'Human+AI Provenance Demo/1.0.0',
       digitalSourceType: 'http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia',
       parameters: {
         description: 'AI-assisted text edit',

@@ -34,9 +34,9 @@ export class C2PAManifestService {
     return {
       'dc:format': format,
       instanceId: uuidv4(),
-      claimGenerator: 'A2UI Provenance Demo',
+      claimGenerator: 'Human+AI Provenance Demo',
       claimGeneratorInfo: {
-        name: 'A2UI Provenance Demo',
+        name: 'Human+AI Provenance Demo',
         version: '1.0.0',
       },
       assertions: [
@@ -69,10 +69,17 @@ export class C2PAManifestService {
     // Sign with ECDSA
     const signature = await cryptoService.sign(signingData, privateKey);
 
+    // Get public key for verification
+    const publicKey = cryptoService.exportPublicKey();
+    if (!publicKey) {
+      throw new Error('Public key not available for signing');
+    }
+
     return {
       protected: protectedBase64,
       payload: payloadBase64,
       signature,
+      publicKey,
     };
   }
 

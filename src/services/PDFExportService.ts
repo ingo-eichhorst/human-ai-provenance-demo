@@ -14,9 +14,9 @@ export class PDFExportService {
     const pdfDoc = await PDFDocument.create();
 
     // Set PDF metadata
-    pdfDoc.setTitle(title || 'A2UI Document');
-    pdfDoc.setCreator('A2UI Provenance Demo');
-    pdfDoc.setProducer('A2UI Provenance Demo/1.0.0');
+    pdfDoc.setTitle(title || 'Human+AI Document');
+    pdfDoc.setCreator('Human+AI Provenance Demo');
+    pdfDoc.setProducer('Human+AI Provenance Demo/1.0.0');
     pdfDoc.setCreationDate(new Date());
 
     // Embed font
@@ -59,7 +59,7 @@ export class PDFExportService {
     });
 
     // Add C2PA metadata to PDF custom properties
-    pdfDoc.setKeywords(['C2PA', 'Content Credentials', 'Provenance', 'A2UI Demo']);
+    pdfDoc.setKeywords(['C2PA', 'Content Credentials', 'Provenance', 'Human+AI Demo']);
 
     // Note: For full C2PA compliance with JUMBF embedding,
     // use @contentauth/c2pa-node on the backend

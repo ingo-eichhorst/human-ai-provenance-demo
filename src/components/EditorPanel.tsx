@@ -408,7 +408,7 @@ export function EditorPanel() {
       const pdfBytes = await pdfExportService.createPDFWithManifest(
         state.content.text,
         manifestWithReceipt,
-        'A2UI Document'
+        'Human+AI Document'
       );
 
       // Download PDF

@@ -11,6 +11,5 @@ export interface VerificationResult {
     contentHash: CheckResult;
     signature: CheckResult;
     receipt: CheckResult;
-    eventChain: CheckResult;
   };
 }

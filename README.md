@@ -1,4 +1,4 @@
-# A2UI Provenance Demo
+# Human+AI Provenance Demo
 
 An educational demonstration of content provenance using **C2PA (Coalition for Content Provenance and Authenticity)** standards in an AI-assisted text editing workflow. This demo shows how cryptographic provenance mechanisms work to ensure content authenticity, authorship attribution, and tamper evidence using industry-standard formats.
 
@@ -86,7 +86,7 @@ An educational demonstration of content provenance using **C2PA (Coalition for C
 - Click "Save" - a green checkmark (✓) will appear when configured
 - Keys are stored in localStorage for convenience
 
-#### 2. Generate Initial Content (NEW)
+#### 2. Generate Initial Content
 
 **Option A: Use Starter Prompts**
 - Click one of the predefined prompt cards (e.g., "Haiku about cats")
@@ -310,7 +310,7 @@ Output: `dist/` folder ready to deploy to static hosting (Vercel, Netlify, GitHu
 ## Project Structure
 
 ```
-a2ui-provenance-demo/
+human-ai-provenance-demo/
 ├── server/                  # Backend Express server (port 3002)
 │   ├── index.ts            # Express app with CORS
 │   ├── c2paSigningService.ts  # Real C2PA signing
@@ -492,6 +492,6 @@ This demo is an educational implementation inspired by:
 
 ---
 
-**Version:** 1.0.0
+**Version:** 0.1.0
 **Last Updated:** 2025-12-31
 **For questions or issues:** See documentation in `CLAUDE.md`, `C2PA_Integration.md`, `PRD_final.md`, and `SPEC.md`

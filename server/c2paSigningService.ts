@@ -37,8 +37,8 @@ export async function signImageWithC2PA(
       claim_generator: manifest.claim.claimGenerator,
       claim_generator_info: manifest.claim.claimGeneratorInfo
         ? [manifest.claim.claimGeneratorInfo]
-        : [{ name: 'A2UI Provenance Demo', version: '1.0.0' }],
-      title: 'A2UI Document',
+        : [{ name: 'Human+AI Provenance Demo', version: '1.0.0' }],
+      title: 'Human+AI Document',
       format: 'image/png',
       assertions: c2paActions
         ? [{ label: 'c2pa.actions', data: c2paActions }]
