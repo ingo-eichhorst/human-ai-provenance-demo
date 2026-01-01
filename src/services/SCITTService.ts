@@ -1,4 +1,5 @@
 import type { SCITTReceipt, C2PAExternalManifest } from '../types/c2pa';
+import { cryptoService } from './CryptoService';
 
 // SCITT service options
 interface SCITTServiceConfig {
@@ -74,10 +75,7 @@ export class SCITTService {
     // Simple receipt: hash of manifest + timestamp
     const manifestJson = JSON.stringify(manifest);
     const manifestHash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(manifestJson));
-
-    const hashHex = Array.from(new Uint8Array(manifestHash))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
+    const hashHex = cryptoService.bufferToHex(manifestHash);
 
     const demoReceipt = {
       version: 1,
@@ -105,10 +103,7 @@ export class SCITTService {
       const { scitt, ...manifestWithoutScitt } = manifest;
       const manifestJson = JSON.stringify(manifestWithoutScitt);
       const manifestHash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(manifestJson));
-
-      const hashHex = Array.from(new Uint8Array(manifestHash))
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('');
+      const hashHex = cryptoService.bufferToHex(manifestHash);
 
       const receiptData = JSON.parse(atob(receipt.receipt));
       return receiptData.manifestHash === hashHex;

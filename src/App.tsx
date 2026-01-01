@@ -7,6 +7,7 @@ import { EditorPanel } from './components/EditorPanel';
 import { TrustArtifactsPanel } from './components/TrustArtifactsPanel';
 import { VerifierPanel } from './components/VerifierPanel';
 import { VerifierEditHistory } from './components/VerifierEditHistory';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import type { C2PAVerificationResult } from './types/c2pa';
 import './App.css';
 
@@ -67,27 +68,35 @@ function App() {
       {state.ui.activeTab === 'editor' ? (
         <div className="main-content">
           <div className="left-panel">
-            <EditorPanel />
+            <ErrorBoundary>
+              <EditorPanel />
+            </ErrorBoundary>
           </div>
 
           <div className="right-panel">
-            <TrustArtifactsPanel />
+            <ErrorBoundary>
+              <TrustArtifactsPanel />
+            </ErrorBoundary>
           </div>
         </div>
       ) : (
         <div className="main-content">
           <div className="left-panel">
-            <VerifierPanel
-              onVerificationComplete={setVerificationResult}
-              onContentExtracted={setVerifiedContent}
-            />
+            <ErrorBoundary>
+              <VerifierPanel
+                onVerificationComplete={setVerificationResult}
+                onContentExtracted={setVerifiedContent}
+              />
+            </ErrorBoundary>
           </div>
 
           <div className="right-panel">
-            <VerifierEditHistory
-              verificationResult={verificationResult}
-              verifiedContent={verifiedContent}
-            />
+            <ErrorBoundary>
+              <VerifierEditHistory
+                verificationResult={verificationResult}
+                verifiedContent={verifiedContent}
+              />
+            </ErrorBoundary>
           </div>
         </div>
       )}

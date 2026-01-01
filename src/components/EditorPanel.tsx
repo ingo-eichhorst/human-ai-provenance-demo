@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useAppContext } from '../state/AppContext';
 import { cryptoService } from '../services/CryptoService';
 import { createProvenanceService } from '../services/ProvenanceService';
@@ -22,6 +22,14 @@ export function EditorPanel() {
   const [aiInstruction, setAiInstruction] = useState('');
   const [localText, setLocalText] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Compute manifest with SCITT receipt (memoized to avoid repeated inline declarations)
+  const manifestWithReceipt = useMemo(() => {
+    if (!state.c2pa.manifest) return null;
+    return state.c2pa.scittReceipt
+      ? { ...state.c2pa.manifest, scitt: state.c2pa.scittReceipt }
+      : state.c2pa.manifest;
+  }, [state.c2pa.manifest, state.c2pa.scittReceipt]);
 
   // Sync local text with committed content when not editing
   useEffect(() => {
@@ -274,10 +282,13 @@ export function EditorPanel() {
 
       dispatch({ type: 'SET_SIGNING', payload: true });
       try {
+        if (!state.crypto.privateKey) {
+          throw new Error('Private key not initialized');
+        }
         const manifest = await c2paManifestService.createExternalManifest(
           pending.proposedText,
           newActions,
-          state.crypto.privateKey!
+          state.crypto.privateKey
         );
 
         dispatch({ type: 'UPDATE_C2PA_MANIFEST', payload: manifest });
@@ -335,11 +346,6 @@ export function EditorPanel() {
       const contentFilename = 'document.txt';
       const manifestFilename = 'document.c2pa.json';
 
-      // Add SCITT receipt to manifest if available
-      const manifestWithReceipt = state.c2pa.scittReceipt
-        ? { ...state.c2pa.manifest, scitt: state.c2pa.scittReceipt }
-        : state.c2pa.manifest;
-
       // Download content file
       const contentBlob = new Blob([state.content.text], { type: 'text/plain' });
       const contentUrl = URL.createObjectURL(contentBlob);
@@ -350,7 +356,7 @@ export function EditorPanel() {
       URL.revokeObjectURL(contentUrl);
 
       // Download manifest file
-      const manifestJson = c2paManifestService.serializeManifest(manifestWithReceipt);
+      const manifestJson = c2paManifestService.serializeManifest(manifestWithReceipt!);
       const manifestBlob = new Blob([manifestJson], { type: 'application/json' });
       const manifestUrl = URL.createObjectURL(manifestBlob);
       const manifestLink = document.createElement('a');
@@ -362,22 +368,17 @@ export function EditorPanel() {
       const errorMessage = error instanceof Error ? error.message : 'Export failed';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
     }
-  }, [state.content.text, state.c2pa.manifest, state.c2pa.scittReceipt, dispatch]);
+  }, [state.content.text, manifestWithReceipt, dispatch]);
 
   // Export as single file with embedded manifest
   const handleExportEmbedded = useCallback(async () => {
     if (!state.c2pa.manifest) return;
 
     try {
-      // Add SCITT receipt to manifest if available
-      const manifestWithReceipt = state.c2pa.scittReceipt
-        ? { ...state.c2pa.manifest, scitt: state.c2pa.scittReceipt }
-        : state.c2pa.manifest;
-
       // Embed manifest into content
       const embeddedContent = embeddedManifestService.embedManifest(
         state.content.text,
-        manifestWithReceipt
+        manifestWithReceipt!
       );
 
       // Download as single file
@@ -392,22 +393,17 @@ export function EditorPanel() {
       const errorMessage = error instanceof Error ? error.message : 'Export failed';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
     }
-  }, [state.content.text, state.c2pa.manifest, state.c2pa.scittReceipt, dispatch]);
+  }, [state.content.text, manifestWithReceipt, dispatch]);
 
   // Export as PDF with embedded manifest
   const handleExportPDF = useCallback(async () => {
     if (!state.c2pa.manifest) return;
 
     try {
-      // Add SCITT receipt to manifest if available
-      const manifestWithReceipt = state.c2pa.scittReceipt
-        ? { ...state.c2pa.manifest, scitt: state.c2pa.scittReceipt }
-        : state.c2pa.manifest;
-
       // Generate PDF
       const pdfBytes = await pdfExportService.createPDFWithManifest(
         state.content.text,
-        manifestWithReceipt,
+        manifestWithReceipt!,
         'Human+AI Document'
       );
 
@@ -423,7 +419,7 @@ export function EditorPanel() {
       const errorMessage = error instanceof Error ? error.message : 'PDF export failed';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
     }
-  }, [state.content.text, state.c2pa.manifest, state.c2pa.scittReceipt, dispatch]);
+  }, [state.content.text, manifestWithReceipt, dispatch]);
 
   // Export as signed image with C2PA manifest (verifiable at verify.contentauthenticity.org)
   const handleExportSignedImage = useCallback(async () => {
@@ -438,12 +434,7 @@ export function EditorPanel() {
       // 2. Convert to base64
       const imageBase64 = await imageExportService.blobToBase64(imageBlob);
 
-      // 3. Prepare manifest with SCITT receipt if available
-      const manifestWithReceipt = state.c2pa.scittReceipt
-        ? { ...state.c2pa.manifest, scitt: state.c2pa.scittReceipt }
-        : state.c2pa.manifest;
-
-      // 4. Send to backend for C2PA signing
+      // 3. Send to backend for C2PA signing
       const response = await fetch('http://localhost:3002/api/sign-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -468,7 +459,7 @@ export function EditorPanel() {
     } finally {
       dispatch({ type: 'SET_SIGNING', payload: false });
     }
-  }, [state.content.text, state.c2pa.manifest, state.c2pa.scittReceipt, dispatch]);
+  }, [state.content.text, manifestWithReceipt, dispatch]);
 
   // Compute diff for pending change
   const diffTokens = state.pendingChange.data

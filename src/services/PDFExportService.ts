@@ -1,5 +1,6 @@
-import { PDFDocument, StandardFonts, rgb, PDFFont } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import type { C2PAExternalManifest } from '../types/c2pa';
+import { wrapText } from '../utils/text';
 
 export class PDFExportService {
   /**
@@ -28,7 +29,7 @@ export class PDFExportService {
     const margin = 50;
     const maxWidth = 500;
 
-    const lines = this.wrapText(content, font, fontSize, maxWidth);
+    const lines = wrapText(content, maxWidth, (text) => font.widthOfTextAtSize(text, fontSize));
     const linesPerPage = 40;
 
     for (let i = 0; i < lines.length; i += linesPerPage) {
@@ -66,42 +67,6 @@ export class PDFExportService {
     // This demo embeds the manifest as an attachment for educational purposes
 
     return pdfDoc.save();
-  }
-
-  /**
-   * Wrap text to fit within maxWidth
-   */
-  private wrapText(text: string, font: PDFFont, fontSize: number, maxWidth: number): string[] {
-    const lines: string[] = [];
-    const paragraphs = text.split('\n');
-
-    for (const paragraph of paragraphs) {
-      if (!paragraph.trim()) {
-        lines.push('');
-        continue;
-      }
-
-      const words = paragraph.split(' ');
-      let currentLine = '';
-
-      for (const word of words) {
-        const testLine = currentLine ? `${currentLine} ${word}` : word;
-        const width = font.widthOfTextAtSize(testLine, fontSize);
-
-        if (width > maxWidth && currentLine) {
-          lines.push(currentLine);
-          currentLine = word;
-        } else {
-          currentLine = testLine;
-        }
-      }
-
-      if (currentLine) {
-        lines.push(currentLine);
-      }
-    }
-
-    return lines;
   }
 }
 

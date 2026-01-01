@@ -20,6 +20,24 @@ export class AIClientService {
   }
 
   /**
+   * Handle API error responses with appropriate error messages
+   */
+  private async handleApiError(response: Response): Promise<never> {
+    const errorData = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
+    const errorMessage = errorData.error?.message || 'Unknown error';
+
+    if (response.status === 401) {
+      throw new Error('Invalid API key - Please check your OpenAI API key');
+    } else if (response.status === 429) {
+      throw new Error('Rate limit exceeded - Please try again later');
+    } else if (response.status >= 500) {
+      throw new Error('OpenAI service error - Please try again');
+    } else {
+      throw new Error(`OpenAI API error: ${errorMessage}`);
+    }
+  }
+
+  /**
    * Generate text from a prompt (for starter prompts)
    */
   async generateFromPrompt(promptText: string): Promise<AIRewriteResponse> {
@@ -51,18 +69,7 @@ export class AIClientService {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
-      const errorMessage = errorData.error?.message || 'Unknown error';
-
-      if (response.status === 401) {
-        throw new Error('Invalid API key - Please check your OpenAI API key');
-      } else if (response.status === 429) {
-        throw new Error('Rate limit exceeded - Please try again later');
-      } else if (response.status >= 500) {
-        throw new Error('OpenAI service error - Please try again');
-      } else {
-        throw new Error(`OpenAI API error: ${errorMessage}`);
-      }
+      await this.handleApiError(response);
     }
 
     const data = await response.json();
@@ -119,18 +126,7 @@ export class AIClientService {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
-      const errorMessage = errorData.error?.message || 'Unknown error';
-
-      if (response.status === 401) {
-        throw new Error('Invalid API key - Please check your OpenAI API key');
-      } else if (response.status === 429) {
-        throw new Error('Rate limit exceeded - Please try again later');
-      } else if (response.status >= 500) {
-        throw new Error('OpenAI service error - Please try again');
-      } else {
-        throw new Error(`OpenAI API error: ${errorMessage}`);
-      }
+      await this.handleApiError(response);
     }
 
     const data = await response.json();

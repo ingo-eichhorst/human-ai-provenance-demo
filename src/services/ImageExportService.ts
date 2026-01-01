@@ -1,3 +1,5 @@
+import { wrapText } from '../utils/text';
+
 /**
  * ImageExportService - Renders text content as PNG image using HTML Canvas
  */
@@ -31,7 +33,7 @@ export class ImageExportService {
     const maxWidth = width - (margin * 2);
 
     // Split content into lines and wrap
-    const lines = this.wrapText(content, ctx, maxWidth);
+    const lines = wrapText(content, maxWidth, (text) => ctx.measureText(text).width);
 
     // Render lines
     let y = margin;
@@ -60,58 +62,6 @@ export class ImageExportService {
         }
       }, 'image/png');
     });
-  }
-
-  /**
-   * Wrap text to fit within maxWidth
-   */
-  private wrapText(text: string, ctx: CanvasRenderingContext2D, maxWidth: number): string[] {
-    const words = text.split(' ');
-    const lines: string[] = [];
-    let currentLine = '';
-
-    for (const word of words) {
-      // Handle newlines in original text
-      if (word.includes('\n')) {
-        const parts = word.split('\n');
-        for (let i = 0; i < parts.length; i++) {
-          if (i > 0) {
-            // Push current line and start new one
-            if (currentLine) {
-              lines.push(currentLine);
-              currentLine = '';
-            }
-          }
-          const part = parts[i];
-          if (part) {
-            const testLine = currentLine ? `${currentLine} ${part}` : part;
-            const metrics = ctx.measureText(testLine);
-            if (metrics.width > maxWidth && currentLine) {
-              lines.push(currentLine);
-              currentLine = part;
-            } else {
-              currentLine = testLine;
-            }
-          }
-        }
-      } else {
-        const testLine = currentLine ? `${currentLine} ${word}` : word;
-        const metrics = ctx.measureText(testLine);
-
-        if (metrics.width > maxWidth && currentLine) {
-          lines.push(currentLine);
-          currentLine = word;
-        } else {
-          currentLine = testLine;
-        }
-      }
-    }
-
-    if (currentLine) {
-      lines.push(currentLine);
-    }
-
-    return lines;
   }
 
   /**

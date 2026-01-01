@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAppContext } from '../state/AppContext';
 import { truncateHash } from '../utils/formatting';
 import { copyToClipboard } from '../utils/clipboard';
-import type { C2PAAction } from '../types/c2pa';
+import { ActionItem } from './ActionItem';
 import './TrustArtifactsPanel.css';
 
 function InfoTooltip({ text }: { text: string }) {
@@ -11,91 +11,6 @@ function InfoTooltip({ text }: { text: string }) {
       <span className="info-icon">ⓘ</span>
       <span className="tooltip-text">{text}</span>
     </span>
-  );
-}
-
-function ActionItem({
-  action,
-  index,
-  isExpanded,
-  onToggle
-}: {
-  action: C2PAAction;
-  index: number;
-  isExpanded: boolean;
-  onToggle: () => void;
-}) {
-  const isHuman = action.digitalSourceType?.includes('humanEdits');
-  const isAI = action.digitalSourceType?.includes('trainedAlgorithmicMedia');
-
-  return (
-    <div className="event-item" onClick={onToggle}>
-      <div className="event-header">
-        <span className="event-number">#{index + 1}</span>
-        <span className={`actor-badge ${isHuman ? 'human' : 'ai'}`}>
-          {isHuman ? 'Human' : isAI ? 'AI' : 'Unknown'}
-        </span>
-        <span className="event-action">{action.action}</span>
-        <span className="event-time">{new Date(action.when).toLocaleString()}</span>
-      </div>
-
-      {isExpanded && (
-        <div className="event-details">
-          <div className="detail-row">
-            <span className="detail-label">Action:</span>
-            <span className="detail-value">{action.action}</span>
-          </div>
-          <div className="detail-row">
-            <span className="detail-label">Timestamp:</span>
-            <span className="detail-value">{action.when}</span>
-          </div>
-          {action.softwareAgent && (
-            <div className="detail-row">
-              <span className="detail-label">Software:</span>
-              <span className="detail-value">{action.softwareAgent}</span>
-            </div>
-          )}
-          {action.digitalSourceType && (
-            <div className="detail-row">
-              <span className="detail-label">Source Type:</span>
-              <span className="detail-value source-type">{action.digitalSourceType}</span>
-            </div>
-          )}
-          {action.parameters?.aiModel && (
-            <div className="detail-row">
-              <span className="detail-label">AI Model:</span>
-              <span className="detail-value">{action.parameters.aiModel}</span>
-            </div>
-          )}
-          {action.parameters?.promptHash && (
-            <div className="detail-row">
-              <span className="detail-label">Prompt Hash:</span>
-              <span className="detail-value hash-mono">{truncateHash(action.parameters.promptHash)}</span>
-            </div>
-          )}
-          {action.parameters?.beforeHash && (
-            <div className="detail-row">
-              <span className="detail-label">Before Hash:</span>
-              <span className="detail-value hash-mono">{truncateHash(action.parameters.beforeHash)}</span>
-            </div>
-          )}
-          {action.parameters?.afterHash && (
-            <div className="detail-row">
-              <span className="detail-label">After Hash:</span>
-              <span className="detail-value hash-mono">{truncateHash(action.parameters.afterHash)}</span>
-            </div>
-          )}
-          {action.parameters?.changeRange && (
-            <div className="detail-row">
-              <span className="detail-label">Range:</span>
-              <span className="detail-value">
-                {action.parameters.changeRange.start}-{action.parameters.changeRange.end}
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
   );
 }
 

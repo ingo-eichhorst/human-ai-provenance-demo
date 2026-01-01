@@ -56,6 +56,12 @@ export function Header() {
             Save
           </button>
           {isConfigured && <span className="status-indicator">✓</span>}
+          <div className="security-warning">
+            <span className="warning-icon">⚠️</span>
+            <span className="warning-text">
+              API keys are stored in browser localStorage and accessible via XSS attacks or browser extensions. For production use, implement secure key management.
+            </span>
+          </div>
         </div>
       </div>
     </header>

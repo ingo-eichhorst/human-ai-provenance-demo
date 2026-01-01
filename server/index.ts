@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import { z } from 'zod';
 import { signImageWithC2PA } from './c2paSigningService.js';
 import type { C2PAExternalManifest } from '../src/types/c2pa.js';
 
@@ -18,19 +19,42 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'C2PA signing server' });
 });
 
+// Zod validation schema for sign-image request
+const SignImageRequestSchema = z.object({
+  image: z.string().min(1, 'Image is required'),
+  manifest: z.object({
+    '@context': z.string(),
+    claim: z.object({
+      'dc:format': z.string(),
+      instanceId: z.string(),
+      claimGenerator: z.string(),
+      assertions: z.array(z.object({
+        label: z.string(),
+        data: z.unknown()
+      }))
+    })
+  })
+});
+
 // POST /api/sign-image
 // Accepts: { image: base64, manifest: C2PAExternalManifest }
 // Returns: { signedImage: base64 }
 app.post('/api/sign-image', async (req, res) => {
   try {
-    const { image, manifest } = req.body as {
+    // Validate request body with Zod
+    const validationResult = SignImageRequestSchema.safeParse(req.body);
+
+    if (!validationResult.success) {
+      return res.status(400).json({
+        error: 'Invalid request body',
+        details: validationResult.error.errors
+      });
+    }
+
+    const { image, manifest } = validationResult.data as {
       image: string;
       manifest: C2PAExternalManifest;
     };
-
-    if (!image || !manifest) {
-      return res.status(400).json({ error: 'Missing image or manifest in request body' });
-    }
 
     // Convert base64 to buffer
     const imageBuffer = Buffer.from(image, 'base64');
