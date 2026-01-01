@@ -3,8 +3,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
   border-radius: 8px;
   margin-top: 1rem;
   gap: 1rem;
@@ -19,14 +19,14 @@
 .action-bar__label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #495057;
+  color: rgba(255, 255, 255, 0.87);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .action-bar__prompt {
   font-size: 0.875rem;
-  color: #6c757d;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .action-bar__buttons {
